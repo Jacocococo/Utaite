@@ -56,7 +56,6 @@ void SongsEntryModel::refresh() {
 }
 
 void SongsEntryModel::move(int oldIndex, int newIndex) {
-    // QModelIndex modelIndex;
     int dest = newIndex > oldIndex ? newIndex + 1 : newIndex;
     beginMoveRows(QModelIndex(), oldIndex, oldIndex, QModelIndex(), dest);
     songs.swapItemsAt(oldIndex, newIndex);

@@ -7,7 +7,7 @@ import Utaite
 
 Kirigami.OverlayDrawer {
     edge: Qt.BottomEdge
-    height: Math.min(parent.height * 0.75, queueList.contentHeight + 8)
+    height: Math.min(parent?.height * 0.75 ?? 0, queueList.contentHeight + 8)
 
     contentItem: ListView {
         id: queueList
@@ -22,25 +22,12 @@ Kirigami.OverlayDrawer {
             }
         }
 
-        delegate: Controls.ItemDelegate {
-            padding: 0
-            width: ListView.view ? ListView.view.width : implicitWidth
-            height: listItem.implicitHeight
-            background: Item {}
-
-            contentItem: Kirigami.SwipeListItem {
+        delegate: Loader {
+            width: queueList.width
+            sourceComponent: Controls.ItemDelegate {
                 id: listItem
-                width: parent.width
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                }
 
-                backgroundColor: Playlist.queueCursor === model.index
-                                   ? Kirigami.Theme.activeBackgroundColor
-                                   : Kirigami.Theme.backgroundColor
-
-                onClicked: {
+                onClicked: function() {
                     Playlist.setQueueIndex(model.index)
                     close()
                 }
@@ -74,19 +61,22 @@ Kirigami.OverlayDrawer {
                                  ? Kirigami.Theme.textColor
                                  : Kirigami.Theme.disabledTextColor
                     }
-                }
 
-                actions: [
-                    Kirigami.Action {
-                        text: i18n("Remove from queue")
-                        icon.name: "edit-delete-remove"
-                        displayHint: Qt.ToolButtonIconOnly
+                    Kirigami.ActionToolBar {
+                        Layout.fillWidth: false
+                        display: Controls.Button.IconOnly
+                        actions: [
+                            Kirigami.Action {
+                                text: i18n("Remove from queue")
+                                icon.name: "edit-delete-remove"
 
-                        onTriggered: {
-                            queueList.model.remove(model.index)
-                        }
+                                onTriggered: {
+                                    queueList.model.remove(model.index)
+                                }
+                            }
+                        ]
                     }
-                ]
+                }
             }
         }
     }
