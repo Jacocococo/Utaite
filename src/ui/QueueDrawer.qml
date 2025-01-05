@@ -62,19 +62,15 @@ Kirigami.OverlayDrawer {
                                  : Kirigami.Theme.disabledTextColor
                     }
 
-                    Kirigami.ActionToolBar {
-                        Layout.fillWidth: false
+                    Controls.ToolButton {
+                        text: i18n("Remove from queue")
+                        icon.name: "edit-delete-remove"
                         display: Controls.Button.IconOnly
-                        actions: [
-                            Kirigami.Action {
-                                text: i18n("Remove from queue")
-                                icon.name: "edit-delete-remove"
+                        flat: true
 
-                                onTriggered: {
-                                    queueList.model.remove(model.index)
-                                }
-                            }
-                        ]
+                        onClicked: function() {
+                            queueList.model.remove(model.index)
+                        }
                     }
                 }
             }
