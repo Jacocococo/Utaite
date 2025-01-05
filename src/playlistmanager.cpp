@@ -43,6 +43,7 @@ void PlaylistManager::setSong(int index) {
     else // already run by shuffleQueue
         emit queueChanged();
 
+    emit queueCursorChanged();
     emit songChanged();
 }
 
@@ -65,20 +66,34 @@ void PlaylistManager::togglePlay() {
         play();
 }
 
+void PlaylistManager::stop() {
+    player->stop();
+    playing = false;
+    emit playingChanged();
+}
+
 void PlaylistManager::setQueueIndex(int index) {
     queueCursor = index;
     emit queueCursorChanged();
     emit songChanged();
 }
 
-void PlaylistManager::forward() {
-    if (queueCursor < queue.size() - 1)
+bool PlaylistManager::canPlayNext() const {
+    return queueCursor < queue.size() - 1;
+}
+
+bool PlaylistManager::canPlayPrevious() const {
+    return queueCursor > 0;
+}
+
+void PlaylistManager::playNext() {
+    if (canPlayNext())
         setQueueIndex(queueCursor + 1);
 }
 
-void PlaylistManager::backward() {
-    if (player->position() < 4000) {
-        if (queueCursor > 0)
+void PlaylistManager::playPrevious() {
+    if (player->position() < 4000) { // TODO: I don't like the inline hardcoded value
+        if (canPlayPrevious())
             setQueueIndex(queueCursor - 1);
 
         return;
@@ -112,8 +127,7 @@ void PlaylistManager::onMediaStatusChanged(QMediaPlayer::MediaStatus mediaStatus
     }
 
     if (mediaStatus == QMediaPlayer::EndOfMedia) {
-        if (queueCursor < queue.size() - 1)
-            setQueueIndex(queueCursor + 1);
+        playNext();
     }
 }
 
@@ -162,6 +176,23 @@ void PlaylistManager::onSongRemoved(int index) {
     }
 }
 
+bool PlaylistManager::isPlaying() const {
+    return playing;
+}
+
+bool PlaylistManager::isSeekable() const {
+    return player->isSeekable();
+}
+
+bool PlaylistManager::isShuffling() const {
+    return shuffle;
+}
+
+void PlaylistManager::setShuffle(bool shuffle) {
+    this->shuffle = shuffle;
+    emit shuffleChanged();
+}
+
 SongModel* PlaylistManager::currentSong() const {
     if (queue.empty())
         return nullptr;
@@ -177,7 +208,7 @@ int PlaylistManager::getQueueCursor() const {
     return queueCursor;
 }
 
-SongsEntryModel *PlaylistManager::getQueueModel() const {
+SongsEntryModel* PlaylistManager::getQueueModel() const {
     return queueModel;
 }
 
@@ -188,4 +219,16 @@ qreal PlaylistManager::playbackPosition() const {
 void PlaylistManager::setPlaybackPosition(qreal pos) {
     position = pos;
     player->setPosition(pos * player->duration());
+}
+
+qint64 PlaylistManager::currentSongDuration() const {
+    return player->duration();
+}
+
+qint64 PlaylistManager::playbackPositionMs() const {
+    return player->position();
+}
+
+void PlaylistManager::setPlaybackPositionMs(qint64 pos) {
+    player->setPosition(pos);
 }

@@ -19,6 +19,7 @@ find_package(Qt${QT_MAJOR_VERSION} REQUIRED NO_MODULE COMPONENTS
     QuickControls2
     Widgets
     Multimedia
+    DBus
 )
 
 find_package(KF${QT_MAJOR_VERSION} REQUIRED COMPONENTS

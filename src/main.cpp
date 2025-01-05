@@ -2,12 +2,15 @@
 #include <QQmlApplicationEngine>
 #include <QtQml>
 #include <QQuickStyle>
+#include <QtDBus>
 #include <KLocalizedContext>
 #include <KLocalizedString>
 
 #include "songsindex.h"
 #include "playlistmanager.h"
 #include "songsentrymodel.h"
+#include "mpris/mpris.h"
+#include "mpris/mprisplayer.h"
 
 int main(int argc, char *argv[]) {
     qputenv("QT_MEDIA_BACKEND", "ffmpeg"); // force ffmpeg as media backend
@@ -23,6 +26,18 @@ int main(int argc, char *argv[]) {
     SongsIndex* index = new SongsIndex();
     PlaylistManager* playlistManager = new PlaylistManager(index->songs);
     SongsEntryModel* songsModel = new SongsEntryModel(index->songs);
+
+    // MPRIS
+    bool dbusSuccessful = QDBusConnection::sessionBus().registerService(QStringLiteral("org.mpris.MediaPlayer2.utaite"));
+
+    static QObject mprisController;
+    Mpris* mpris;
+    MprisPlayer* mprisPlayer;
+    if (dbusSuccessful) {
+        mpris = new Mpris(&mprisController);
+        mprisPlayer = new MprisPlayer(playlistManager, &mprisController);
+        QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/mpris/MediaPlayer2"), &mprisController);
+    }
 
     // TODO: I think it would be possible to make it update in real time. That would be cool
     QObject::connect(index, SIGNAL(updatedIndex()), songsModel, SLOT(refresh()));
@@ -41,6 +56,11 @@ int main(int argc, char *argv[]) {
     if (engine.rootObjects().isEmpty()) {
         return -1;
     }
+
+    QObject* rootObject = engine.rootObjects().at(0);
+    QObject::connect(mpris, &Mpris::raise, rootObject, [rootObject]() {
+        QMetaObject::invokeMethod(rootObject, "raise");
+    });
 
     int ret = app.exec();
 

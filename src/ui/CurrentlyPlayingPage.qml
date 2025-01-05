@@ -76,9 +76,9 @@ Kirigami.Page {
             Controls.Button {
                 id: prevButton
                 icon.name: "media-skip-backward-symbolic"
-                enabled: Playlist.queueCursor > 0
+                enabled: Playlist.canPlayPrevious
 
-                onClicked: Playlist.backward()
+                onClicked: Playlist.playPrevious()
             }
 
             Controls.Button {
@@ -93,9 +93,9 @@ Kirigami.Page {
             Controls.Button {
                 id: nextButton
                 icon.name: "media-skip-forward-symbolic"
-                enabled: Playlist.queueCursor < Playlist.queue.length - 1
+                enabled: Playlist.canPlayNext
 
-                onClicked: Playlist.forward()
+                onClicked: Playlist.playNext()
             }
         }
 
