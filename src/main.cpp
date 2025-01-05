@@ -6,6 +6,8 @@
 #include <KLocalizedContext>
 #include <KLocalizedString>
 
+#include <unistd.h>
+
 #include "songsindex.h"
 #include "playlistmanager.h"
 #include "songsentrymodel.h"
@@ -27,18 +29,6 @@ int main(int argc, char *argv[]) {
     PlaylistManager* playlistManager = new PlaylistManager(index->songs);
     SongsEntryModel* songsModel = new SongsEntryModel(index->songs);
 
-    // MPRIS
-    bool dbusSuccessful = QDBusConnection::sessionBus().registerService(QStringLiteral("org.mpris.MediaPlayer2.utaite"));
-
-    static QObject mprisController;
-    Mpris* mpris;
-    MprisPlayer* mprisPlayer;
-    if (dbusSuccessful) {
-        mpris = new Mpris(&mprisController);
-        mprisPlayer = new MprisPlayer(playlistManager, &mprisController);
-        QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/mpris/MediaPlayer2"), &mprisController);
-    }
-
     // TODO: I think it would be possible to make it update in real time. That would be cool
     QObject::connect(index, SIGNAL(updatedIndex()), songsModel, SLOT(refresh()));
 
@@ -58,9 +48,25 @@ int main(int argc, char *argv[]) {
     }
 
     QObject* rootObject = engine.rootObjects().at(0);
-    QObject::connect(mpris, &Mpris::raise, rootObject, [rootObject]() {
-        QMetaObject::invokeMethod(rootObject, "raise");
-    });
+
+    // MPRIS
+    QString dbusName = QStringLiteral("org.mpris.MediaPlayer2.utaite");
+    bool dbusSuccessful = QDBusConnection::sessionBus().registerService(dbusName);
+
+    if (!dbusSuccessful)
+        dbusSuccessful = QDBusConnection::sessionBus()
+                             .registerService(dbusName + QStringLiteral(".instance") + QString::number(getpid()));
+
+    if (dbusSuccessful) {
+        static QObject mprisController;
+        Mpris* mpris = new Mpris(&mprisController);
+        MprisPlayer* mprisPlayer = new MprisPlayer(playlistManager, &mprisController);
+        QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/mpris/MediaPlayer2"), &mprisController);
+
+        QObject::connect(mpris, &Mpris::raise, rootObject, [rootObject]() {
+            QMetaObject::invokeMethod(rootObject, "raise");
+        });
+    }
 
     int ret = app.exec();
 
