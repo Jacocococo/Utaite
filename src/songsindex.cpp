@@ -83,7 +83,7 @@ SongModel* SongsIndex::readSongMetadata(int index, const char* fileName) {
 
     return new SongModel(
         index,
-        QUrl(fileName),
+        QUrl::fromLocalFile(fileName),
         QUrl::fromLocalFile(coverartCache.filePath(writeImage(image))),
         title,
         artist);
