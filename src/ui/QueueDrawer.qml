@@ -23,8 +23,19 @@ Kirigami.OverlayDrawer {
         }
 
         onVisibleChanged: function() {
-            if (visible)
+            if (visible && Playlist.queueCursor > 0)
                 positionViewAtIndex(Playlist.queueCursor, ListView.Beginning)
+        }
+
+        headerPositioning: ListView.OverlayHeader
+        header: Kirigami.ListSectionHeader {
+            text: i18n("Queue")
+            width: parent.width
+            z: 2
+            background: Rectangle {
+                anchors.fill: parent
+                color: Kirigami.Theme.backgroundColor
+            }
         }
 
         delegate: Loader {
