@@ -60,9 +60,9 @@ Kirigami.Page {
 
             from: 0
             to: 1
-            value: Playlist.playbackPosition
+            value: pressed ? position : Playlist.playbackPosition
 
-            onPressedChanged: {
+            onPressedChanged: function() {
                 if (!pressed) {
                     Playlist.playbackPosition = position;
                 }
