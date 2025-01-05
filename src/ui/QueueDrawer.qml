@@ -22,6 +22,11 @@ Kirigami.OverlayDrawer {
             }
         }
 
+        onVisibleChanged: function() {
+            if (visible)
+                positionViewAtIndex(Playlist.queueCursor, ListView.Beginning)
+        }
+
         delegate: Loader {
             width: queueList.width
             sourceComponent: Controls.ItemDelegate {
